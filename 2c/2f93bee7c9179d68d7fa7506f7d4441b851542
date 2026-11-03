@@ -1,0 +1,27 @@
+src/authorship/attribution_recovery.rs
+  s_6cfc49997b11e5::t_3b95e4881509d2 160-168,172
+  s_6cfc49997b11e5::t_1ca39446be19b7 2341-2345
+  s_6cfc49997b11e5::t_6386f7aa9f8d8d 2649-2655,2683-2687,2698-2701,2706-2707,2715-2719,2722,2724-2727
+  s_6cfc49997b11e5::t_92bafd16514970 425
+  s_6cfc49997b11e5::t_0034dd282aca39 1427,1429,1432-1436,1442-1445,1452-1456,1467,1474,1477-1478,1515-1534,1537-1545
+  s_6cfc49997b11e5::t_ade8a65a6179f0 2346-2355,2386,2409,2435,2468,2494,2513,2618,2786
+  s_6cfc49997b11e5::t_d2e7c3edf65ff3 2747-2750,2766
+tests/integration/bash_attribution.rs
+  s_6cfc49997b11e5::t_fa247dceb6bfee 721-724,727,743-747,753-754,756,761,763-764,766,770
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2c2f93bee7c9179d68d7fa7506f7d4441b851542",
+  "prompts": {},
+  "sessions": {
+    "s_6cfc49997b11e5": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "4ce0b9d3-d2d6-425c-a9ff-f009a3e0bba8",
+        "model": "default"
+      },
+      "human_author": "Serhat Boyraz <serhat.byrz@gmail.com>"
+    }
+  }
+}
