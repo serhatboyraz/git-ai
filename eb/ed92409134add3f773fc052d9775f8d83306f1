@@ -1,0 +1,26 @@
+src/commands/checkpoint_agent/bash_tool.rs
+  s_6cfc49997b11e5::t_0bfee9e2d04e9b 209-212
+src/authorship/attribution_recovery.rs
+  s_6cfc49997b11e5::t_541dfa5e299030 2506-2563
+  s_6cfc49997b11e5::t_f540c89e8d3458 1387-1392
+  s_6cfc49997b11e5::t_fb9b6843811eaa 1413,1417-1424,1462-1466
+  s_6cfc49997b11e5::t_de4e3d0a859d59 1467-1468
+tests/integration/bash_attribution.rs
+  s_6cfc49997b11e5::t_6d534ffe5ff4ee 569-649
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ebed92409134add3f773fc052d9775f8d83306f1",
+  "prompts": {},
+  "sessions": {
+    "s_6cfc49997b11e5": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "4ce0b9d3-d2d6-425c-a9ff-f009a3e0bba8",
+        "model": "default"
+      },
+      "human_author": "Serhat Boyraz <serhat.byrz@gmail.com>"
+    }
+  }
+}
