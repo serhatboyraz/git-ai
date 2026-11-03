@@ -1,0 +1,43 @@
+src/commands/checkpoint_agent/bash_tool.rs
+  s_6cfc49997b11e5::t_013050a1ed4ac0 210-212
+src/daemon.rs
+  s_6cfc49997b11e5::t_1eadd194872561 3365,3376,3384,3395
+tests/integration/bash_attribution.rs
+  s_6cfc49997b11e5::t_2162312b882a55 569-618,644-653,674-767
+  s_6cfc49997b11e5::t_e485c98b86665a 768
+src/authorship/attribution_recovery.rs
+  s_6cfc49997b11e5::t_06a50010fb0304 158-176
+  s_6cfc49997b11e5::t_547ba6a4b578c4 955,964,976-979
+  s_6cfc49997b11e5::t_29beb98cc541ff 391,419-420,448-449
+  s_6cfc49997b11e5::t_d4496358b62663 514,561-565,583
+  s_6cfc49997b11e5::t_dcb6a3fbea1be8 705-706
+  s_6cfc49997b11e5::t_22ebf864987ae8 1399,1403,1405,1407-1421,1423-1439,1441-1444,1456,1463-1467,1507-1513,1517
+  s_6cfc49997b11e5::t_c7a3eb11aa9ee9 2341-2345,2347-2348,2365-2369,2371-2372,2392-2396,2398-2399,2426-2430,2432-2433,2453-2457,2459-2460,2473-2477,2479-2480,2579-2583,2585,2614,2643,2730-2734,2736
+  s_6cfc49997b11e5::t_cffda820def90d 2653-2680,2682-2718
+  s_6cfc49997b11e5::t_63b93e1f0338ed 2681
+  s_6cfc49997b11e5::t_9d3ba3f90cbc9b 2346
+  s_6cfc49997b11e5::t_78f2cf19c27b4f 2370
+  s_6cfc49997b11e5::t_ed9655dbedf038 2397
+  s_6cfc49997b11e5::t_c2c81411eac7f6 2431
+  s_6cfc49997b11e5::t_d32f25b5a6d13b 2458
+  s_6cfc49997b11e5::t_1705aa838189e9 2478
+  s_6cfc49997b11e5::t_2533286881a8c3 2584
+  s_6cfc49997b11e5::t_5ffd5b083c5362 2735
+  s_6cfc49997b11e5::t_1f03a292548549 2737
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6cbf0ebb3e7f3de3c5cf8407f041586c213714e6",
+  "prompts": {},
+  "sessions": {
+    "s_6cfc49997b11e5": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "4ce0b9d3-d2d6-425c-a9ff-f009a3e0bba8",
+        "model": "default"
+      },
+      "human_author": "Serhat Boyraz <serhat.byrz@gmail.com>"
+    }
+  }
+}
