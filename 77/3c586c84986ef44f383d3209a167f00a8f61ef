@@ -1,0 +1,23 @@
+tests/integration/issue_2480_known_human_survives_human_checkpoint.rs
+  s_55e545bc2a13b3::t_219699f1b53af0 1-48
+tests/integration/main.rs
+  s_55e545bc2a13b3::t_7ed4f0bb8125cf 89
+src/daemon/checkpoint.rs
+  s_55e545bc2a13b3::t_39c9cd55744af4 707-720
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.7.6",
+  "base_commit_sha": "773c586c84986ef44f383d3209a167f00a8f61ef",
+  "prompts": {},
+  "sessions": {
+    "s_55e545bc2a13b3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fdc1ef52-1366-4fbf-a089-be3a863eb2bc",
+        "model": "unknown"
+      },
+      "human_author": "Serhat Boyraz <serhat.boyraz@defacto.com>"
+    }
+  }
+}
