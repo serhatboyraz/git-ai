@@ -11206,6 +11206,18 @@ pub fn open_local_socket_stream_with_timeout(
     }
 }
 
+/// True when the daemon's control pipe exists but this process is not allowed
+/// to open it (`ERROR_ACCESS_DENIED`). Typical cause: the daemon was started
+/// from an elevated process and this client is not elevated (or is sandboxed).
+#[cfg(windows)]
+pub fn daemon_pipe_access_denied(config: &DaemonConfig) -> bool {
+    const ERROR_ACCESS_DENIED: i32 = 5;
+    matches!(
+        WindowsPipeClient::connect_ms(config.control_socket_path.as_os_str(), 100),
+        Err(err) if err.raw_os_error() == Some(ERROR_ACCESS_DENIED)
+    )
+}
+
 #[cfg(windows)]
 fn open_windows_named_pipe_client_with_timeout(
     socket_path: &Path,

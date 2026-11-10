@@ -142,10 +142,7 @@ fn ensure_daemon_running_attached(timeout: Duration) -> Result<DaemonConfig, Str
     remove_stale_daemon_files(&config);
 
     if daemon_startup_is_blocked(&config) {
-        return Err(format!(
-            "daemon startup blocked: lock held at {}",
-            config.lock_path.display()
-        ));
+        return Err(startup_blocked_error(&config));
     }
 
     #[cfg(not(windows))]
@@ -286,6 +283,27 @@ pub(crate) fn ensure_daemon_running(
     }
 }
 
+/// Error for "the daemon looks down but its lock is held". On Windows the
+/// usual reason is not a stuck lock but a running daemon whose pipes this
+/// process may not open; say so instead of the misleading lock message.
+fn startup_blocked_error(config: &DaemonConfig) -> String {
+    #[cfg(windows)]
+    if crate::daemon::daemon_pipe_access_denied(config) {
+        return format!(
+            "the git-ai background service is running with different privileges \
+             (started from an elevated/administrator process) and this process is not \
+             allowed to connect to {}. Restart it from an elevated terminal with \
+             `git-ai bg restart`; it will come back without elevation and accept \
+             both elevated and non-elevated clients",
+            config.control_socket_path.display()
+        );
+    }
+    format!(
+        "daemon startup blocked: lock held at {}",
+        config.lock_path.display()
+    )
+}
+
 fn daemon_startup_is_blocked(config: &DaemonConfig) -> bool {
     if let Some(parent) = config.lock_path.parent()
         && std::fs::create_dir_all(parent).is_err()
@@ -348,10 +366,7 @@ fn start_daemon_detached_with_config(
     remove_stale_daemon_files(&config);
 
     if daemon_startup_is_blocked(&config) {
-        return Err(format!(
-            "daemon startup blocked: lock held at {}",
-            config.lock_path.display()
-        ));
+        return Err(startup_blocked_error(&config));
     }
 
     spawn_daemon_run_detached(&config)?;
@@ -377,6 +392,21 @@ fn daemon_runtime_dir(config: &DaemonConfig) -> Result<PathBuf, String> {
 }
 
 #[cfg(windows)]
+#[path = "daemon_unelevated_windows.rs"]
+mod unelevated;
+
+/// Environment variables the daemon must not inherit (see
+/// `GIT_ENV_VARS_TO_SANITIZE`); Windows variable names are case-insensitive.
+#[cfg(windows)]
+fn is_daemon_sanitized_env_var(name: &OsStr) -> bool {
+    let name = name.to_string_lossy();
+    name.eq_ignore_ascii_case("GIT_AI")
+        || crate::daemon::GIT_ENV_VARS_TO_SANITIZE
+            .iter()
+            .any(|var| name.eq_ignore_ascii_case(var))
+}
+
+#[cfg(windows)]
 fn powershell_single_quote_literal(value: &OsStr) -> String {
     format!("'{}'", value.to_string_lossy().replace('\'', "''"))
 }
@@ -392,6 +422,25 @@ fn spawn_daemon_run_detached(config: &DaemonConfig) -> Result<(), String> {
 
     #[cfg(windows)]
     {
+        // An elevated client must not start an elevated daemon: its pipes
+        // would reject every normal-privilege client (IDE extensions, agent
+        // hooks), silently dropping their checkpoints. Start it as a child of
+        // the non-elevated desktop shell instead; fall back to the regular
+        // spawn when that is not possible (no interactive shell, etc.).
+        if unelevated::current_process_is_elevated() {
+            let env = std::env::vars_os().filter(|(name, _)| !is_daemon_sanitized_env_var(name));
+            match unelevated::spawn_as_shell_child(&exe, &["bg", "run"], &runtime_dir, env) {
+                Ok(()) => return Ok(()),
+                Err(err) => {
+                    tracing::warn!(
+                        "could not start the daemon without elevation, starting it elevated; \
+                     non-elevated clients will not be able to reach it: {}",
+                        err
+                    );
+                }
+            }
+        }
+
         let script = format!(
             "Start-Process -FilePath {} -ArgumentList @('bg','run') -WorkingDirectory {} -WindowStyle Hidden",
             powershell_single_quote_literal(exe.as_os_str()),
