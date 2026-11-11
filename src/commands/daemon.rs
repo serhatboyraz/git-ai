@@ -422,22 +422,22 @@ fn spawn_daemon_run_detached(config: &DaemonConfig) -> Result<(), String> {
 
     #[cfg(windows)]
     {
-        // An elevated client must not start an elevated daemon: its pipes
-        // would reject every normal-privilege client (IDE extensions, agent
-        // hooks), silently dropping their checkpoints. Start it as a child of
-        // the non-elevated desktop shell instead; fall back to the regular
-        // spawn when that is not possible (no interactive shell, etc.).
-        if unelevated::current_process_is_elevated() {
-            let env = std::env::vars_os().filter(|(name, _)| !is_daemon_sanitized_env_var(name));
-            match unelevated::spawn_as_shell_child(&exe, &["bg", "run"], &runtime_dir, env) {
-                Ok(()) => return Ok(()),
-                Err(err) => {
-                    tracing::warn!(
-                        "could not start the daemon without elevation, starting it elevated; \
-                     non-elevated clients will not be able to reach it: {}",
-                        err
-                    );
-                }
+        // The daemon must never run elevated: its pipes would reject every
+        // normal-privilege client (IDE extensions, agent hooks), silently
+        // dropping their checkpoints. Always start it as a direct child of the
+        // non-elevated desktop shell, even from a non-elevated client: the
+        // PowerShell fallback below can itself be elevated by endpoint
+        // privilege-management policies, which then elevates the daemon too.
+        // Fall back only when re-parenting is impossible (no interactive shell).
+        let env = std::env::vars_os().filter(|(name, _)| !is_daemon_sanitized_env_var(name));
+        match unelevated::spawn_as_shell_child(&exe, &["bg", "run"], &runtime_dir, env) {
+            Ok(()) => return Ok(()),
+            Err(err) => {
+                tracing::warn!(
+                    "could not start the daemon as a child of the desktop shell, \
+                     falling back to PowerShell: {}",
+                    err
+                );
             }
         }
 

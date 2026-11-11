@@ -26,11 +26,10 @@ use windows_sys::Win32::Security::{
 };
 use windows_sys::Win32::System::Threading::{
     CREATE_NEW_PROCESS_GROUP, CREATE_NO_WINDOW, CREATE_UNICODE_ENVIRONMENT, CreateProcessW,
-    DeleteProcThreadAttributeList, EXTENDED_STARTUPINFO_PRESENT, GetCurrentProcess,
-    InitializeProcThreadAttributeList, OpenProcess, OpenProcessToken,
-    PROC_THREAD_ATTRIBUTE_PARENT_PROCESS, PROCESS_CREATE_PROCESS, PROCESS_INFORMATION,
-    PROCESS_QUERY_LIMITED_INFORMATION, STARTF_USESHOWWINDOW, STARTUPINFOEXW, STARTUPINFOW,
-    UpdateProcThreadAttribute,
+    DeleteProcThreadAttributeList, EXTENDED_STARTUPINFO_PRESENT, InitializeProcThreadAttributeList,
+    OpenProcess, OpenProcessToken, PROC_THREAD_ATTRIBUTE_PARENT_PROCESS, PROCESS_CREATE_PROCESS,
+    PROCESS_INFORMATION, PROCESS_QUERY_LIMITED_INFORMATION, STARTF_USESHOWWINDOW, STARTUPINFOEXW,
+    STARTUPINFOW, UpdateProcThreadAttribute,
 };
 use windows_sys::Win32::UI::WindowsAndMessaging::{
     GetShellWindow, GetWindowThreadProcessId, SW_HIDE,
@@ -85,11 +84,6 @@ fn process_is_elevated(process: HANDLE) -> Option<bool> {
     }
     let token = OwnedHandle(token);
     Some(token_is_elevated(token.0))
-}
-
-/// True when the current process runs with an elevated token.
-pub(super) fn current_process_is_elevated() -> bool {
-    process_is_elevated(unsafe { GetCurrentProcess() }).unwrap_or(false)
 }
 
 /// Open the process that owns the desktop shell window (explorer.exe) with the
