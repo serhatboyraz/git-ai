@@ -1,0 +1,19 @@
+deploy/windows/Publish-GitHubRelease.ps1
+  s_442f3263a8f6a3::t_5693474e06ce17 1-92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.8.0",
+  "base_commit_sha": "ae72e54077ac98a1aa48b76219b92275bdfc2363",
+  "prompts": {},
+  "sessions": {
+    "s_442f3263a8f6a3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "54ea03d7-163d-42b2-bb45-1bf70f4a518e",
+        "model": "unknown"
+      },
+      "human_author": "Serhat Boyraz <serhat.boyraz@defacto.com>"
+    }
+  }
+}
