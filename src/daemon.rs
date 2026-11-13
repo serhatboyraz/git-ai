@@ -85,6 +85,8 @@ pub mod trace_normalizer;
 pub mod transcript_redaction;
 pub mod untraced_commit_fixup;
 pub mod untraced_fixup_ignore;
+#[cfg(windows)]
+mod windows_object_owner;
 
 pub use control_api::{
     BashSessionQueryResponse, BashSnapshotQueryResponse, ControlRequest, ControlResponse,
@@ -10667,6 +10669,10 @@ pub(crate) async fn run_daemon(config: DaemonConfig) -> Result<DaemonExitAction,
     remove_stale_daemon_files(&config);
     let _lock = DaemonLock::acquire(&config.lock_path)?;
     let _active_guard = DaemonProcessActiveGuard::enter();
+    // Before any pipe exists: an elevated daemon must stay reachable from
+    // normal-privilege clients (IDE extensions, agent hooks).
+    #[cfg(windows)]
+    let object_owner_result = windows_object_owner::own_new_objects_as_current_user();
     write_pid_metadata(&config)?;
 
     // Initialize tracing subscriber before log file redirect so the fmt layer
@@ -10703,6 +10709,14 @@ pub(crate) async fn run_daemon(config: DaemonConfig) -> Result<DaemonExitAction,
         arch = std::env::consts::ARCH,
         "daemon started"
     );
+    #[cfg(windows)]
+    if let Err(error) = object_owner_result {
+        tracing::warn!(
+            %error,
+            "could not make the user the owner of the daemon pipes; \
+             if this daemon is elevated, non-elevated clients cannot reach it"
+        );
+    }
 
     remove_socket_if_exists(&config.trace_socket_path)?;
     remove_socket_if_exists(&config.control_socket_path)?;

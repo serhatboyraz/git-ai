@@ -65,7 +65,7 @@ mockito = "1.6"
 criterion = { version = "0.5", features = ["html_reports"] }
 
 [target.'cfg(windows)'.dev-dependencies]
-windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_JobObjects", "Win32_System_Threading"] }
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security_Authorization", "Win32_System_JobObjects", "Win32_System_Pipes", "Win32_System_Threading"] }
 
 [profile.dev]
 debug = 1                          # Line tables only -- smaller binaries, faster linking
