@@ -1,0 +1,23 @@
+flake.nix
+  s_af5b83cd6291a0::t_a970c7f4a16096 39
+Cargo.toml
+  s_af5b83cd6291a0::t_a970c7f4a16096 3
+Cargo.lock
+  s_af5b83cd6291a0::t_d7773afac9b2be 1069
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.8.0",
+  "base_commit_sha": "3b51cdcc8e9ab556d97c00c4dbd3bd3ec279533c",
+  "prompts": {},
+  "sessions": {
+    "s_af5b83cd6291a0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "040366d6-f681-4627-879a-1f30493f8103",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Serhat Boyraz <serhat.boyraz@defacto.com>"
+    }
+  }
+}
