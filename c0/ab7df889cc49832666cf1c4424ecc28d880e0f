@@ -1,0 +1,25 @@
+src/commands/daemon.rs
+  s_af5b83cd6291a0::t_706e17e8194e67 296
+src/daemon.rs
+  s_af5b83cd6291a0::t_a8cbb5eda2fb29 88-89,10672-10675,10712-10719
+Cargo.toml
+  s_af5b83cd6291a0::t_7e667411394087 68
+src/daemon/windows_object_owner.rs
+  s_af5b83cd6291a0::t_bffdc4b8e1a54e 1-2,4-9,11-15,17,19,21-22,24,26-29,31-44,46-50,53-54,56,59-61,64-72,74-79,81-83,88-89,95-104,106-114,117-121,123-135,137-144,147-191,194-195,197-199
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.8.0",
+  "base_commit_sha": "c0ab7df889cc49832666cf1c4424ecc28d880e0f",
+  "prompts": {},
+  "sessions": {
+    "s_af5b83cd6291a0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "040366d6-f681-4627-879a-1f30493f8103",
+        "model": "unknown"
+      },
+      "human_author": "Serhat Boyraz <serhat.boyraz@defacto.com>"
+    }
+  }
+}
