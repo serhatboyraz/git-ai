@@ -58,7 +58,9 @@ namespace GitAiVS.Services
                 RepoWorkingDir = repoRoot,
                 EditedFilepaths = new List<string>(editedPaths),
                 AgentName = agentName,
-                Model = "unknown",
+                Model = CopilotModelResolver.Resolve(
+                    repoRoot,
+                    editedPaths.Length > 0 ? System.IO.Path.Combine(repoRoot, editedPaths[0]) : null),
                 ConversationId = _sessionId,
                 DirtyFiles = dirtyFiles,
             };

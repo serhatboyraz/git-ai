@@ -28,7 +28,7 @@ namespace GitAiVS
     public sealed class GitAiPackage : AsyncPackage
     {
         public const string PackageGuidString = "B2C3D4E5-F6A7-8901-BCDE-F12345678901";
-        private const string ExtensionVersion = "0.1.0";
+        private const string ExtensionVersion = "0.1.1";
 
         private BinaryResolver? _binaryResolver;
         private CheckpointService? _checkpointService;

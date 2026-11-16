@@ -3,7 +3,7 @@
                  xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
     <Identity Id="GitAiVS.A1B2C3D4-E5F6-7890-ABCD-EF1234567890"
-              Version="0.1.0"
+              Version="0.1.1"
               Language="en-US"
               Publisher="git-ai" />
     <DisplayName>git-ai</DisplayName>
