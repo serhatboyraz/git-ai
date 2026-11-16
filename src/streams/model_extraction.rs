@@ -291,6 +291,22 @@ fn extract_model_from_jsonl_line(line: &str) -> Option<String> {
         return Some(model.to_string());
     }
 
+    // Copilot CLI with `selectedModel: auto` never emits session.model_change;
+    // the resolved model lives in `data` on these events instead.
+    let copilot_cli_field = match json.get("type").and_then(|v| v.as_str()) {
+        Some("assistant.message" | "tool.execution_start" | "tool.execution_complete") => {
+            Some("model")
+        }
+        Some("session.auto_mode_resolved") => Some("chosenModel"),
+        Some("session.shutdown") => Some("currentModel"),
+        _ => None,
+    };
+    if let Some(field) = copilot_cli_field
+        && let Some(model) = string_candidate(json.get("data").and_then(|d| d.get(field)))
+    {
+        return Some(model);
+    }
+
     let candidate = json
         .get("message")
         .and_then(|m| m.get("model"))
@@ -1548,6 +1564,38 @@ model = "profile-only-model"
         let path = fixture_path("copilot_cli_session_events.jsonl");
         let result = extract_model(&path, StreamFormat::CopilotEventStreamJsonl, None).unwrap();
         assert_eq!(result, Some("gpt-4.1".to_string()));
+    }
+
+    #[test]
+    fn test_extract_model_copilot_cli_auto_mode_data_model() {
+        use std::io::Write;
+
+        let mut file = tempfile::NamedTempFile::with_suffix(".jsonl").unwrap();
+        writeln!(
+            file,
+            r#"{{"type":"session.start","data":{{"selectedModel":"auto"}}}}"#
+        )
+        .unwrap();
+        writeln!(
+            file,
+            r#"{{"type":"session.auto_mode_resolved","data":{{"chosenModel":"mai-code-1.1-flash"}}}}"#
+        )
+        .unwrap();
+        writeln!(
+            file,
+            r#"{{"type":"assistant.message","data":{{"model":"mai-code-1.1-flash","content":"hi"}}}}"#
+        )
+        .unwrap();
+        writeln!(
+            file,
+            r#"{{"type":"model.turn_ended","data":{{"model":"gpt-5.4-nano"}}}}"#
+        )
+        .unwrap();
+        file.flush().unwrap();
+
+        let result =
+            extract_model(file.path(), StreamFormat::CopilotEventStreamJsonl, None).unwrap();
+        assert_eq!(result, Some("mai-code-1.1-flash".to_string()));
     }
 
     #[test]
