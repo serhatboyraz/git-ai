@@ -25,6 +25,7 @@ Bu paket, Git AI'ı kullanıcı bilgisayarlarına **internet erişimi gerektirme
 | `Uninstall-GitAi.ps1` | Kaldırma scripti |
 | `Detect-GitAi.ps1` | Intune/SCCM algılama scripti |
 | `scripts\` | Git AI'ın resmi kurulum yardımcıları (Install-GitAi.ps1 tarafından çağrılır) |
+| `visualstudio\GitAiVS.vsix` | Visual Studio 2022/2026 eklentisi (Copilot düzenlemelerini algılar). `install.cmd` kurmaz; ayrıca kurulur: `VSIXInstaller.exe /quiet visualstudio\GitAiVS.vsix` (Visual Studio kapalıyken) |
 | `SHA256SUMS.txt` | Dosya bütünlük özetleri |
 
 ## Kurulum ne yapar?

@@ -9,6 +9,7 @@
 [CmdletBinding()]
 param(
     [string]$BinaryPath,
+    [string]$VsixPath,
     [string]$OutputDir
 )
 
@@ -18,7 +19,9 @@ Set-StrictMode -Version Latest
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 if (-not $BinaryPath) { $BinaryPath = Join-Path $RepoRoot 'dist\git-ai.exe' }
 if (-not $OutputDir) { $OutputDir = Join-Path $RepoRoot 'dist' }
+if (-not $VsixPath) { $VsixPath = Join-Path $RepoRoot 'dist\GitAiVS.vsix' }
 if (-not (Test-Path -LiteralPath $BinaryPath)) { throw "Binary bulunamadi: $BinaryPath (once cargo build --release)" }
+if (-not (Test-Path -LiteralPath $VsixPath)) { throw "Visual Studio eklentisi bulunamadi: $VsixPath (once agent-support\visualstudio Release derlemesi)" }
 
 $version = "$(& $BinaryPath --version)".Trim()
 if ($version -notmatch '^\d+\.\d+\.\d+') { throw "Surum okunamadi: '$version'" }
@@ -37,6 +40,8 @@ function Write-Text([string]$Path, [string]$Content, [switch]$Crlf, [switch]$Bom
 }
 
 Copy-Item -LiteralPath $BinaryPath -Destination (Join-Path $pkgDir 'git-ai.exe')
+New-Item -ItemType Directory -Force -Path (Join-Path $pkgDir 'visualstudio') | Out-Null
+Copy-Item -LiteralPath $VsixPath -Destination (Join-Path $pkgDir 'visualstudio\GitAiVS.vsix')
 
 # Paket scriptleri (PowerShell 5.1 icin CRLF + UTF-8 BOM)
 foreach ($f in 'Install-GitAi.ps1', 'Uninstall-GitAi.ps1') {
