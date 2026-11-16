@@ -1,0 +1,25 @@
+src/streams/model_extraction.rs
+  s_c7d43c9b8c7f4a::t_fc6250c1188afd 74-78,80-85,92-101,1283
+  s_c7d43c9b8c7f4a::t_0890c79cb4cbbc 13-14
+  s_c7d43c9b8c7f4a::t_48b8c124c20bc4 79
+  s_c7d43c9b8c7f4a::t_22c665c2f8082f 121,128-131,133-138
+  s_c7d43c9b8c7f4a::t_0ebb436fb11401 1291-1295
+  s_c7d43c9b8c7f4a::t_b514788d250ddb 1341-1343,1347
+  s_c7d43c9b8c7f4a::t_36919eb8d9aa15 1284-1290,1296-1331
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.8.1",
+  "base_commit_sha": "e2b127fd8fc93a037b5d3762b96bc98d0714f638",
+  "prompts": {},
+  "sessions": {
+    "s_c7d43c9b8c7f4a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "99838377-d7e5-4619-ade4-10901ad055c3",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Serhat Boyraz <serhat.boyraz@defacto.com>"
+    }
+  }
+}
