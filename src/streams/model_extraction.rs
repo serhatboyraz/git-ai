@@ -10,6 +10,8 @@ use std::sync::{Arc, Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
 const MAX_JSONL_SCAN_BYTES: u64 = 50 * 1024;
+/// Fallback tail windows, tried in order when the default window finds no model.
+const MAX_JSONL_WIDE_SCAN_BYTES: [u64; 2] = [512 * 1024, 4 * 1024 * 1024];
 const MAX_JSONL_HEAD_SCAN_BYTES: usize = 1024 * 1024;
 const MAX_JSONL_HEAD_LINES: usize = 20;
 const MAX_CODEX_CONFIG_BYTES: u64 = 1024 * 1024;
@@ -69,11 +71,33 @@ fn extract_model_from_jsonl_tail(path: &Path) -> Result<Option<String>, StreamEr
         return Ok(Some(model));
     }
 
+    // Still nothing: the default tail window was swallowed by oversized records
+    // (Claude Code writes whole-file tool results on one line, easily >50KB) and
+    // the head held only metadata. Widen the tail window before giving up.
+    if tail_was_truncated {
+        for window in MAX_JSONL_WIDE_SCAN_BYTES {
+            let (model, truncated) = scan_jsonl_tail(path, window, extract_model_from_jsonl_line)?;
+            if model.is_some() || !truncated {
+                return Ok(model);
+            }
+        }
+    }
+
     Ok(None)
 }
 
 fn extract_model_from_jsonl_tail_with(
     path: &Path,
+    extract_from_line: fn(&str) -> Option<String>,
+) -> Result<(Option<String>, bool), StreamError> {
+    scan_jsonl_tail(path, MAX_JSONL_SCAN_BYTES, extract_from_line)
+}
+
+/// Scans the last `window` bytes of a JSONL file, newest line first. Returns
+/// the model (if any) and whether the window started past the file's beginning.
+fn scan_jsonl_tail(
+    path: &Path,
+    window: u64,
     extract_from_line: fn(&str) -> Option<String>,
 ) -> Result<(Option<String>, bool), StreamError> {
     let mut file = match File::open(path) {
@@ -94,18 +118,24 @@ fn extract_model_from_jsonl_tail_with(
         return Ok((None, false));
     }
 
-    let read_size = std::cmp::min(MAX_JSONL_SCAN_BYTES, file_size);
+    let read_size = std::cmp::min(window, file_size);
     let seek_pos = file_size - read_size;
 
     if file.seek(SeekFrom::Start(seek_pos)).is_err() {
         return Ok((None, false));
     }
 
-    let reader = BufReader::new(file);
-    let lines: Vec<String> = reader.lines().map_while(Result::ok).collect();
+    let mut tail = Vec::with_capacity(read_size as usize);
+    if file.take(read_size).read_to_end(&mut tail).is_err() {
+        return Ok((None, false));
+    }
 
-    for line in lines.iter().rev() {
-        if let Some(model) = extract_from_line(line) {
+    // Split on raw bytes: the window usually starts mid-record, possibly inside
+    // a multi-byte character, and that partial line must not abort the scan.
+    for line in tail.split(|byte| *byte == b'\n').rev() {
+        if let Ok(line) = std::str::from_utf8(line)
+            && let Some(model) = extract_from_line(line)
+        {
             return Ok((Some(model), seek_pos > 0));
         }
     }
@@ -1251,6 +1281,55 @@ mod tests {
     }
 
     #[test]
+    fn test_extract_model_claude_behind_oversized_tool_result() {
+        use std::io::Write;
+
+        // Shape of a real Claude Code session: metadata-only head, then an
+        // assistant record followed by a whole-file tool result on one line.
+        let mut file = tempfile::NamedTempFile::with_suffix(".jsonl").unwrap();
+        for _ in 0..MAX_JSONL_HEAD_LINES {
+            writeln!(
+                file,
+                r#"{{"type":"queue-operation","operation":"enqueue"}}"#
+            )
+            .unwrap();
+        }
+        writeln!(
+            file,
+            r#"{{"type":"assistant","message":{{"model":"claude-opus-4-6","content":[]}}}}"#
+        )
+        .unwrap();
+        let tool_result = serde_json::json!({
+            "type": "user",
+            "toolUseResult": { "originalFile": "ş".repeat(150_000) },
+        });
+        writeln!(file, "{tool_result}").unwrap();
+        file.flush().unwrap();
+
+        let result = extract_model(file.path(), StreamFormat::ClaudeJsonl, None).unwrap();
+        assert_eq!(result, Some("claude-opus-4-6".to_string()));
+    }
+
+    #[test]
+    fn test_extract_model_jsonl_tail_window_starting_mid_character() {
+        use std::io::Write;
+
+        let mut file = tempfile::NamedTempFile::with_suffix(".jsonl").unwrap();
+        // 2-byte chars + odd padding: whichever byte the window starts on, one
+        // of the two variants lands inside a character.
+        for pad in ["", "x"] {
+            file.as_file().set_len(0).unwrap();
+            file.rewind().unwrap();
+            writeln!(file, r#"{{"text":"{pad}{}"}}"#, "ş".repeat(40_000)).unwrap();
+            writeln!(file, r#"{{"model":"model-in-tail"}}"#).unwrap();
+            file.flush().unwrap();
+
+            let result = extract_model(file.path(), StreamFormat::ClaudeJsonl, None).unwrap();
+            assert_eq!(result, Some("model-in-tail".to_string()));
+        }
+    }
+
+    #[test]
     fn test_extract_model_jsonl_bounds_total_head_scan() {
         use std::io::Write;
 
@@ -1259,10 +1338,13 @@ mod tests {
             serde_json::json!({ "padding": "x".repeat(MAX_JSONL_HEAD_SCAN_BYTES) });
         writeln!(file, "{oversized_record}").unwrap();
         writeln!(file, r#"{{"model":"model-after-total-limit"}}"#).unwrap();
+        // Trailing record larger than the widest tail window, so the model line
+        // is out of reach of both the head scan and every tail scan.
+        let widest_tail = *MAX_JSONL_WIDE_SCAN_BYTES.last().unwrap() as usize;
         writeln!(
             file,
             "{}",
-            serde_json::json!({ "padding": "x".repeat(51_200) })
+            serde_json::json!({ "padding": "x".repeat(widest_tail) })
         )
         .unwrap();
         file.flush().unwrap();
